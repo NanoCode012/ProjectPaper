@@ -11,9 +11,14 @@ public class Control : MonoBehaviour {
     public GameObject sideA;
     public GameObject sideB;
     public GameObject character;
+    public GameObject blockA;
+    public GameObject blockB;
 
-	public GameObject shot;
-    public GameObject hitResult;
+
+    public GameObject shootCollection;
+
+    public Text winStatementA;
+    public Text winStatementB;
 
     Camera mainCam = new Camera();
 
@@ -25,6 +30,7 @@ public class Control : MonoBehaviour {
 
     int wind = 0;
 
+
 	// Use this for initialization
 	void Start () {
         mainCam = Camera.main;
@@ -32,12 +38,28 @@ public class Control : MonoBehaviour {
         sideACount.text = (charactersTotal/2).ToString();
         sideBCount.text = (charactersTotal/2).ToString();
 
-        ShowSideA(true);
+        blockA.SetActive(false);
+        blockB.SetActive(false);
+
+        winStatementA.text = "";
+        winStatementB.text = "";
 	}
 
     // Update is called once per frame
     void Update()
     {
+        if (canShoot) {
+            if (sideA.transform.childCount <= 0) {
+                winStatementB.text = "Player B wins!";
+                canShoot = false;
+            }
+            else if (sideB.transform.childCount <= 0)
+            {
+                winStatementA.text = "Player A wins!";
+                canShoot = false;
+            }
+            SetLivingCount();
+        }
         //print(Input.mousePosition);
         if (Input.GetMouseButtonDown(0))
         {
@@ -46,12 +68,14 @@ public class Control : MonoBehaviour {
 				mousePressed++;
 				SpawnCharacter();
 				if (mousePressed == 5) {
-					StartCoroutine(ShowSideA(false));
+                    blockA.SetActive(true);
+                    print("reach five");
 				}else if (mousePressed == 10)
                 {
                     StartCoroutine(ShowSideA(true));
-                    canAShoot = true;
+                    print("reach ten");
                     canShoot = true;
+					canAShoot = true;
                     SetLivingCount();
                 }
             }
@@ -64,27 +88,26 @@ public class Control : MonoBehaviour {
 
     }
 
-    private void SetLivingCount()
+    public void SetLivingCount()
     {
         sideACount.text = sideB.transform.childCount.ToString();
         sideBCount.text = sideA.transform.childCount.ToString();
     }
 
-    IEnumerator ShowSideA(bool showA, int seconds = 3)
+    IEnumerator ShowSideA(bool showA, int seconds = 2)
     {
-        var timeStarted = DateTime.Now;
         if(showA)
         {
-            sideB.SetActive(false);
+            blockB.SetActive(true);
             yield return new WaitForSeconds(seconds);
-            sideA.SetActive(true);
+            blockA.SetActive(false);
 
         }
         else 
         {
-            sideA.SetActive(false);
+            blockA.SetActive(true);
             yield return new WaitForSeconds(seconds);
-            sideB.SetActive(true);
+            blockB.SetActive(false);
         }
     }
 
@@ -92,6 +115,7 @@ public class Control : MonoBehaviour {
     {
         var pos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         pos.z = 0;
+        print("mouse pressed at " + pos);
 
         if (mousePressed <= 5 && (mainCam.ScreenToViewportPoint(Input.mousePosition).x < 0.5))
         {
@@ -113,35 +137,45 @@ public class Control : MonoBehaviour {
     {
         var pos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         pos.z = 0;
-
         if (canAShoot && (mainCam.ScreenToViewportPoint(Input.mousePosition).x < 0.5))
         {
+			var shootCollect = Instantiate(shootCollection, new Vector3(0,0,0), Quaternion.identity);
             canAShoot = false;
-			var fire = Instantiate(shot, pos, Quaternion.identity);
-            var posFire = mainCam.ViewportToWorldPoint(new Vector3(0.5f, 0, 0));
-            posFire.y = wind;
-            posFire.z = 0;
+			//var fire = Instantiate(shot, pos, Quaternion.identity);
+            var fire = shootCollect.transform.GetChild(0);
+            fire.transform.position = pos;
 
-            var fireEnemy = Instantiate(hitResult, posFire, Quaternion.identity);
-            fireEnemy.transform.parent = fire.transform;
+            var distToLine = (0 - fire.transform.position.x);
+            var posFire = new Vector3(fire.transform.position.x + distToLine * 2, fire.transform.position.y + wind, 0);
+            //var fireEnemy = Instantiate(hitResult, posFire, Quaternion.identity);
+            var fireEnemy = shootCollect.transform.GetChild(1);
+            fireEnemy.transform.position = posFire;
+
+            //fire.transform.parent = shootCollect.transform;
+            //fireEnemy.transform.parent = shootCollect.transform;
 
             StartCoroutine(ShowSideA(false));
-
-
+            print("A hide");
 
         }
         else if (!canAShoot && (mainCam.ScreenToViewportPoint(Input.mousePosition).x > 0.5))
         {
+            var shootCollect = Instantiate(shootCollection, new Vector3(0, 0, 0), Quaternion.identity);
             canAShoot = true;
-            var fire = Instantiate(shot, pos, Quaternion.identity);
-            var posFire = mainCam.ViewportToWorldPoint(new Vector3(-0.5f, 0, 0));
-            posFire.y = wind;
-            posFire.z = 0;
+            //var fire = Instantiate(shot, pos, Quaternion.identity);
+            var fire = shootCollect.transform.GetChild(0);
+            fire.transform.position = pos;
 
-            var fireEnemy = Instantiate(hitResult, posFire, Quaternion.identity);
-            fireEnemy.transform.parent = fire.transform;
+            var distToLine = (fire.transform.position.x - 0);
+            var posFire = new Vector3(fire.transform.position.x-distToLine * 2, fire.transform.position.y + wind, 0);
+            //var fireEnemy = Instantiate(hitResult, posFire, Quaternion.identity);
+            var fireEnemy = shootCollect.transform.GetChild(1);
+            fireEnemy.transform.position = posFire;
+            //fire.transform.parent = shootCollect.transform;
+            //fireEnemy.transform.parent = shootCollect.transform;
 
             StartCoroutine(ShowSideA(true));
+            print("A show");
         }
 
     }
