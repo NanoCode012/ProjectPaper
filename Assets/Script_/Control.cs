@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
+using UnityEngine.SceneManagement;
 
 public class Control : MonoBehaviour {
 
@@ -13,7 +13,8 @@ public class Control : MonoBehaviour {
     public GameObject character;
     public GameObject blockA;
     public GameObject blockB;
-
+    public GameObject grid;
+    static bool gridTurnedOn = true;
 
     public GameObject shootCollection;
 
@@ -26,7 +27,7 @@ public class Control : MonoBehaviour {
     const int charactersTotal = 10;
 
 	bool canShoot;
-    bool canAShoot;
+    bool isATurn;
 
     int wind = 0;
 
@@ -34,16 +35,18 @@ public class Control : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         mainCam = Camera.main;
-
         sideACount.text = (charactersTotal/2).ToString();
         sideBCount.text = (charactersTotal/2).ToString();
 
-        blockA.SetActive(false);
-        blockB.SetActive(false);
+        StartCoroutine(ShowSideA(true, 0));
 
         winStatementA.text = "";
+        winStatementA.transform.GetChild(0).GetComponent<Text>().text = "";
         winStatementB.text = "";
-	}
+        winStatementB.transform.GetChild(0).GetComponent<Text>().text = "";
+
+        grid.SetActive(gridTurnedOn);
+    }
 
     // Update is called once per frame
     void Update()
@@ -51,11 +54,13 @@ public class Control : MonoBehaviour {
         if (canShoot) {
             if (sideA.transform.childCount <= 0) {
                 winStatementB.text = "Player B wins!";
+                winStatementB.transform.GetChild(0).GetComponent<Text>().text = "Play Again!";
                 canShoot = false;
             }
             else if (sideB.transform.childCount <= 0)
             {
                 winStatementA.text = "Player A wins!";
+                winStatementA.transform.GetChild(0).GetComponent<Text>().text = "Play Again!";
                 canShoot = false;
             }
             SetLivingCount();
@@ -68,14 +73,14 @@ public class Control : MonoBehaviour {
 				mousePressed++;
 				SpawnCharacter();
 				if (mousePressed == 5) {
-                    blockA.SetActive(true);
+                    StartCoroutine(ShowSideA(false, 1f));
                     print("reach five");
 				}else if (mousePressed == 10)
                 {
                     StartCoroutine(ShowSideA(true));
                     print("reach ten");
                     canShoot = true;
-					canAShoot = true;
+                    isATurn = true;
                     SetLivingCount();
                 }
             }
@@ -88,13 +93,19 @@ public class Control : MonoBehaviour {
 
     }
 
+    public void LoadLevel(string name)
+    {
+        print("Load level : " + name);
+        SceneManager.LoadScene(name);
+    }
+
     public void SetLivingCount()
     {
         sideACount.text = sideB.transform.childCount.ToString();
         sideBCount.text = sideA.transform.childCount.ToString();
     }
 
-    IEnumerator ShowSideA(bool showA, int seconds = 2)
+    IEnumerator ShowSideA(bool showA, float seconds = 2f)
     {
         if(showA)
         {
@@ -137,10 +148,10 @@ public class Control : MonoBehaviour {
     {
         var pos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         pos.z = 0;
-        if (canAShoot && (mainCam.ScreenToViewportPoint(Input.mousePosition).x < 0.5))
+        if (isATurn && (mainCam.ScreenToViewportPoint(Input.mousePosition).x < 0.5))
         {
 			var shootCollect = Instantiate(shootCollection, new Vector3(0,0,0), Quaternion.identity);
-            canAShoot = false;
+            isATurn = false;
 			//var fire = Instantiate(shot, pos, Quaternion.identity);
             var fire = shootCollect.transform.GetChild(0);
             fire.transform.position = pos;
@@ -158,10 +169,10 @@ public class Control : MonoBehaviour {
             print("A hide");
 
         }
-        else if (!canAShoot && (mainCam.ScreenToViewportPoint(Input.mousePosition).x > 0.5))
+        else if (!isATurn && (mainCam.ScreenToViewportPoint(Input.mousePosition).x > 0.5))
         {
             var shootCollect = Instantiate(shootCollection, new Vector3(0, 0, 0), Quaternion.identity);
-            canAShoot = true;
+            isATurn = true;
             //var fire = Instantiate(shot, pos, Quaternion.identity);
             var fire = shootCollect.transform.GetChild(0);
             fire.transform.position = pos;
