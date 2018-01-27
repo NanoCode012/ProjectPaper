@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+
 
 public class Control : MonoBehaviour {
 
@@ -35,9 +35,8 @@ public class Control : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         mainCam = Camera.main;
-        sideACount.text = (charactersTotal/2).ToString();
-        sideBCount.text = (charactersTotal/2).ToString();
-
+        sideACount.text = " •  •  •  •  • ";
+        sideBCount.text = " •  •  •  •  • ";
         StartCoroutine(ShowSideA(true, 0));
 
         winStatementA.text = "";
@@ -93,16 +92,12 @@ public class Control : MonoBehaviour {
 
     }
 
-    public void LoadLevel(string name)
-    {
-        print("Load level : " + name);
-        SceneManager.LoadScene(name);
-    }
-
     public void SetLivingCount()
     {
-        sideACount.text = sideB.transform.childCount.ToString();
-        sideBCount.text = sideA.transform.childCount.ToString();
+        sideACount.text = "";
+        sideBCount.text = "";
+        foreach (Transform child in sideB.transform) sideACount.text += " • ";
+        foreach (Transform child in sideA.transform) sideBCount.text += " • ";
     }
 
     IEnumerator ShowSideA(bool showA, float seconds = 2f)
@@ -126,20 +121,22 @@ public class Control : MonoBehaviour {
     {
         var pos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         pos.z = 0;
-        print("mouse pressed at " + pos);
+        //print("mouse pressed at " + pos);
 
         if (mousePressed <= 5 && (mainCam.ScreenToViewportPoint(Input.mousePosition).x < 0.5))
         {
             var stickman = Instantiate(character, pos, Quaternion.identity);
             stickman.transform.parent = sideA.transform;
-            sideACount.text = (charactersTotal / 2 - mousePressed).ToString();
+            sideACount.text = "";
+            for (int i = 0; i < (charactersTotal / 2 - mousePressed); i++) sideACount.text += " • ";
 
         }
         else if (5 < mousePressed && mousePressed <= 10 && (mainCam.ScreenToViewportPoint(Input.mousePosition).x > 0.5))
         {
             var stickman = Instantiate(character, pos, Quaternion.identity);
             stickman.transform.parent = sideB.transform;
-            sideBCount.text = (charactersTotal - mousePressed).ToString();
+            sideBCount.text = "";
+            for (int i = 0; i < charactersTotal - mousePressed; i++) sideBCount.text += " • ";
         }
         else mousePressed--;
     }
