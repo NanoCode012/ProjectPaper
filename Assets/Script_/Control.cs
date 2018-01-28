@@ -55,8 +55,10 @@ public class Control : MonoBehaviour {
 
         winStatementA.text = "";
         winStatementA.transform.GetChild(0).GetComponent<Text>().text = "";
+        winStatementA.transform.GetChild(0).gameObject.SetActive(false);
         winStatementB.text = "";
         winStatementB.transform.GetChild(0).GetComponent<Text>().text = "";
+        winStatementB.transform.GetChild(0).gameObject.SetActive(false);
 
         grid.SetActive(gridTurnedOn);
 
@@ -69,6 +71,7 @@ public class Control : MonoBehaviour {
     {
         if (canShoot) {
             if (sideA.transform.childCount <= 0) {
+				winStatementA.transform.GetChild(0).gameObject.SetActive(true);
                 winStatementB.text = "Player B wins!";
                 winStatementB.transform.GetChild(0).GetComponent<Text>().text = "Play Again!";
 				AudioSource.PlayClipAtPoint(endSound, transform.position);
@@ -76,6 +79,7 @@ public class Control : MonoBehaviour {
             }
             else if (sideB.transform.childCount <= 0)
             {
+				winStatementA.transform.GetChild(0).gameObject.SetActive(true);
                 winStatementA.text = "Player A wins!";
                 winStatementA.transform.GetChild(0).GetComponent<Text>().text = "Play Again!";
 				AudioSource.PlayClipAtPoint(endSound, transform.position);

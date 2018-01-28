@@ -43,5 +43,10 @@ public class MusicPlayer : MonoBehaviour
     {
         audioSource.volume = volume;
     }
+
+    public void PlayClip(AudioClip audio)
+    {
+        AudioSource.PlayClipAtPoint(audio, transform.position);
+    }
 }
 

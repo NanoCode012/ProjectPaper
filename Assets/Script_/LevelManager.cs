@@ -22,8 +22,4 @@ public class LevelManager : MonoBehaviour {
         SceneManager.LoadScene(name);
     }
 
-    public void PlaySound(AudioClip audio)
-    {
-        AudioSource.PlayClipAtPoint(audio, transform.position);
-    }
 }
